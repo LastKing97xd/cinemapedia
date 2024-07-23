@@ -32,7 +32,7 @@ class MovieMovieDB {
         required this.voteCount,
     });
 
-    factory MovieMovieDB.fromJson(Map<String, dynamic> json) => MovieMovieDB(
+    factory MovieMovieDB.fromJson(Map<String, dynamic> json) =>  MovieMovieDB(
         adult: json["adult"] ?? false,
         backdropPath: json["backdrop_path"] ?? '',
         genreIds: List<int>.from(json["genre_ids"].map((x) => x)),
@@ -42,12 +42,27 @@ class MovieMovieDB {
         overview: json["overview"] ?? '',
         popularity: json["popularity"]?.toDouble(),
         posterPath: json["poster_path"] ?? '',
-        releaseDate: DateTime.parse(json["release_date"]),
+      releaseDate: _parseDate(json["release_date"]),
+        //releaseDate: DateTime.parse(json["release_date"]),
         title: json["title"],
         video: json["video"],
         voteAverage: json["vote_average"]?.toDouble(),
         voteCount: json["vote_count"],
     );
+
+    static DateTime _parseDate(String? dateString) {
+    if (dateString == null || dateString.isEmpty) {
+      // Manejar fecha por defecto si es nula o vacía
+      return DateTime(1970, 1, 1); // Puedes ajustar esto según tus necesidades
+    }
+    try {
+      return DateTime.parse(dateString);
+    } catch (e) {
+      print('Error parsing date: $dateString');
+      // Manejar fecha por defecto en caso de error de parseo
+      return DateTime(1970, 1, 1); // Puedes ajustar esto según tus necesidades
+    }
+  }
 
     Map<String, dynamic> toJson() => {
         "adult": adult,

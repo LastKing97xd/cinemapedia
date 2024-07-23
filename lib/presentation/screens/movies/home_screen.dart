@@ -14,6 +14,7 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return const Scaffold(
       body: _HomeView(),
+      bottomNavigationBar: CustomBottomNavigation(),
     );
   }
 }
@@ -39,13 +40,22 @@ class _HomeViewState extends ConsumerState<_HomeView> {
   Widget build(BuildContext context) {
     //Aqui veo cada state del provider
     final nowPlayingMovies = ref.watch(nowPlayingMoviesProvider);
+    final moviesSlideShow = ref.watch(moviesSlideShowProvider);
 
     return Column(
       children: [
 
         CustomAppbar(),
 
-        MoviesSlideShow(movies: nowPlayingMovies)
+        MoviesSlideShow(movies: moviesSlideShow),
+
+        MoviesHorizontalListview(
+          movies: nowPlayingMovies,
+          title: 'En Cines',
+          subTitle: 'Sabado 20',
+          //* El read se utiliza dentro de funciones o CallBacks - IMPORTANTE
+          loadNextPage: () => ref.read(nowPlayingMoviesProvider.notifier).loadNextPage()
+        )
 
         //expande todo lo posible del padre, ya tendria un alto y ancho estimado para que funcione el listview
         // Expanded(
