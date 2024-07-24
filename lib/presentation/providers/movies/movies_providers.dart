@@ -16,8 +16,9 @@ final nowPlayingMoviesProvider = StateNotifierProvider<MoviesNotifier, List<Movi
 typedef MovieCallBack = Future<List<Movie>> Function({int page});
 
 class MoviesNotifier extends StateNotifier<List<Movie>> {
-  int currentPage = 0;
 
+  int currentPage = 0;
+  bool isLoading = false;
   MovieCallBack fetchMoreMovies;
   //[] el punto es que esto proporcione un List<Movie>
   MoviesNotifier({
@@ -25,11 +26,19 @@ class MoviesNotifier extends StateNotifier<List<Movie>> {
   }) : super ([]);
 
   Future<void> loadNextPage() async{
+    if( isLoading ) return;
+
+    isLoading = true;
+    print('Peticion peliculas');
     currentPage ++;
     //fetchMoreMovies iniciando va a recibir la 1 y eso hace referencia arriba para que consulte la primera pagina
     final List<Movie> movies = await fetchMoreMovies(page: currentPage);
     //aqui esta el actual y se agrega lo de la siguiente pagina
     state = [...state,...movies];
+
+    await Future.delayed(const Duration(milliseconds: 300));
+
+    isLoading = false;
   }
 
 }

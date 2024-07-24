@@ -42,7 +42,7 @@ class MovieMovieDB {
         overview: json["overview"] ?? '',
         popularity: json["popularity"]?.toDouble(),
         posterPath: json["poster_path"] ?? '',
-      releaseDate: _parseDate(json["release_date"]),
+        releaseDate: _parseDate(json["release_date"]),
         //releaseDate: DateTime.parse(json["release_date"]),
         title: json["title"],
         video: json["video"],
