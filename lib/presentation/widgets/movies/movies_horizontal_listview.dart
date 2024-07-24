@@ -30,11 +30,9 @@ class _MoviesHorizontalListviewState extends State<MoviesHorizontalListview> {
       if(widget.loadNextPage == null) return;
 
       if( (scrollController.position.pixels + 200) >= scrollController.position.maxScrollExtent ){
-
         //print('load next movies');
         widget.loadNextPage!();
-      }
-        
+      }    
     },);
     
   }
@@ -163,16 +161,15 @@ class _Slide extends StatelessWidget {
               children: [
                 Icon(Icons.star_half_outlined, color: Colors.yellow.shade800,),
                 const SizedBox(width: 3,),
-                //Text(movie.voteAverage.toStringAsFixed(1), style: titleStyle.bodyMedium?.copyWith(color: Colors.yellow.shade800),),
-                Text('${movie.voteAverage}', style: titleStyle.bodyMedium?.copyWith(color: Colors.yellow.shade800),),
+                Text(movie.voteAverage.toStringAsFixed(1), style: titleStyle.bodyMedium?.copyWith(color: Colors.yellow.shade800),),
+                //Text('${movie.voteAverage}', style: titleStyle.bodyMedium?.copyWith(color: Colors.yellow.shade800),),
                 //* para definir Spacer se tiene que definir el tamano del sizedBox
                 const Spacer(),
                 //const SizedBox(width: 10,),
                 //aplicando metodo static de Formato vistas youtube
                 Text(HumanFormats.number(movie.popularity), style: titleStyle.bodySmall)
                 //Text('${movie.popularity}', style: titleStyle.bodySmall),
-            
-            
+                //  
               ],
             ),
           )
