@@ -42,14 +42,24 @@ class _HomeViewState extends ConsumerState<_HomeView> {
 
   @override
   Widget build(BuildContext context) {
-    //Aqui veo cada state del provider
+    final initialLoading = ref.watch(initialLoadingProvider);
+
+    if(initialLoading) return const FullScreenLoader();
+
+    //Aqui veo cada state del provider o el valor del provider
     final nowPlayingMovies = ref.watch(nowPlayingMoviesProvider);
-    final moviesSlideShow = ref.watch(moviesSlideShowProvider);
     final popularMovies = ref.watch(popularMoviesProvider);
     final topRatedMovies = ref.watch(topRatedMoviesProvider);
     final upComingMovies = ref.watch(upComingMoviesProvider);
 
+    final moviesSlideShow = ref.watch(moviesSlideShowProvider);
 
+    //para que sea invisible hasta que cargue
+    // return Visibility(
+    //   visible: !initialLoading,
+    //   child: CustomScrollView());
+
+    
     //El appbar sera interactivo al hacer scroll
     return CustomScrollView(
       slivers: [
