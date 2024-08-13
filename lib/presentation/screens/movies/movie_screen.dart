@@ -1,5 +1,7 @@
+import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:cinemapedia/presentation/providers/actors/actors_by_movie_provider.dart';
 import 'package:cinemapedia/domain/entities/movie.dart';
 import 'package:cinemapedia/presentation/providers/movies/movie_info_provider.dart';
 
@@ -22,6 +24,7 @@ class MovieScreenState extends ConsumerState<MovieScreen> {
     super.initState();
 
     ref.read(movieInfoProvider.notifier).loadMovie(widget.movieId);
+    ref.read(actorsByMovieProvider.notifier).loadActors(widget.movieId);
 
   }
 
@@ -112,11 +115,71 @@ class _MovieDetails extends StatelessWidget {
               ),)
             ],
           ),
-        )
+        ),
 
-
+        _ActorsByMovie(movieId: movie.id.toString())
 
       ],
+    );
+  }
+}
+
+class _ActorsByMovie extends ConsumerWidget {
+
+  final String movieId;
+
+  const _ActorsByMovie({required this.movieId});
+
+  @override
+  Widget build(BuildContext context, ref) {
+
+    final actorsByMovie = ref.watch(actorsByMovieProvider);
+    //final size = MediaQuery.of(context).size;
+
+    if(actorsByMovie[movieId] == null){
+      return CircularProgressIndicator(strokeWidth: 2,);
+    }
+
+    final actors = actorsByMovie[movieId]!;
+
+    return SizedBox(
+      height: 270,
+
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        itemCount: actors.length,
+        itemBuilder: (context, index) {
+          final actors2 = actors[index];
+
+          return Container(
+            padding: EdgeInsets.all(8),
+            width: 135,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(20),
+                  child: Image.network(
+                    actors2.profilePath,
+                    width: 135,
+                    height: 180,
+                    fit: BoxFit.cover,
+                  ),
+                ),
+
+                SizedBox(height: 10,),
+                Text(actors2.name, maxLines: 2,),
+                Text(
+                  actors2.character ?? '',
+                  maxLines: 2,
+                  style: const TextStyle(fontWeight: FontWeight.bold, overflow: TextOverflow.ellipsis)
+                )
+
+              ],
+            ),
+          );
+        },
+      ),
     );
   }
 }
@@ -137,19 +200,26 @@ class _CustomSliverAppBar extends StatelessWidget {
       flexibleSpace: FlexibleSpaceBar(
         centerTitle: false,
         titlePadding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-        title: Text(
+        /*title: Text(
           movie.title,
           style: const TextStyle(fontSize: 25,color: Colors.white),
           textAlign: TextAlign.start,
-        ),
+        ),*/
         background: Stack(
           children: [
             SizedBox.expand(
               child: Image.network(
                 movie.posterPath,
                 fit: BoxFit.cover,
+                loadingBuilder: (context, child, loadingProgress) {
+                  if(loadingProgress != null) return const SizedBox();
+
+                  return FadeInRight(child: child);
+                  //return FadeIn(child: child);
+                },
               ),
             ),
+
             const SizedBox.expand(
               child: DecoratedBox(
                 decoration: BoxDecoration(
