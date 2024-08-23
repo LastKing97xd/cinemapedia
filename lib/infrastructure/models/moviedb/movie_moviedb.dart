@@ -9,7 +9,7 @@ class MovieMovieDB {
     final String overview;
     final double popularity;
     final String posterPath;
-    final DateTime releaseDate;
+    final DateTime? releaseDate;
     final String title;
     final bool video;
     final double voteAverage;
@@ -42,7 +42,8 @@ class MovieMovieDB {
         overview: json["overview"] ?? '',
         popularity: json["popularity"]?.toDouble(),
         posterPath: json["poster_path"] ?? '',
-        releaseDate: _parseDate(json["release_date"]),
+        releaseDate: (json["release_date"] != null && json["release_date"] != "")? DateTime.parse(json["release_date"]) : null,
+        //releaseDate: _parseDate(json["release_date"]),
         //releaseDate: DateTime.parse(json["release_date"]),
         title: json["title"],
         video: json["video"],
@@ -50,19 +51,20 @@ class MovieMovieDB {
         voteCount: json["vote_count"],
     );
 
-    static DateTime _parseDate(String? dateString) {
-    if (dateString == null || dateString.isEmpty) {
-      // Manejar fecha por defecto si es nula o vacía
-      return DateTime(1970, 1, 1); // Puedes ajustar esto según tus necesidades
-    }
-    try {
-      return DateTime.parse(dateString);
-    } catch (e) {
-      print('Error parsing date: $dateString');
-      // Manejar fecha por defecto en caso de error de parseo
-      return DateTime(1970, 1, 1); // Puedes ajustar esto según tus necesidades
-    }
-  }
+    // static DateTime _parseDate(String? dateString) {
+    //   if (dateString == null || dateString.isEmpty) {
+    //     // Manejar fecha por defecto si es nula o vacía
+    //     return DateTime(1970, 1, 1); // Puedes ajustar esto según tus necesidades
+    //   }
+    //   try 
+    //     {
+    //       return DateTime.parse(dateString);
+    //     } catch (e) {
+    //       print('Error parsing date: $dateString');
+    //       // Manejar fecha por defecto en caso de error de parseo
+    //       return DateTime(1970, 1, 1); // Puedes ajustar esto según tus necesidades
+    //     }
+    // }
 
     Map<String, dynamic> toJson() => {
         "adult": adult,
@@ -74,7 +76,7 @@ class MovieMovieDB {
         "overview": overview,
         "popularity": popularity,
         "poster_path": posterPath,
-        "release_date": "${releaseDate.year.toString().padLeft(4, '0')}-${releaseDate.month.toString().padLeft(2, '0')}-${releaseDate.day.toString().padLeft(2, '0')}",
+        "release_date": releaseDate != null ? "${releaseDate!.year.toString().padLeft(4, '0')}-${releaseDate!.month.toString().padLeft(2, '0')}-${releaseDate!.day.toString().padLeft(2, '0')}" : null,
         "title": title,
         "video": video,
         "vote_average": voteAverage,

@@ -1,18 +1,23 @@
-
+import 'package:cinemapedia/presentation/providers/providers.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:cinemapedia/domain/entities/movie.dart';
 
-class CustomAppbar extends StatelessWidget {
+import 'package:cinemapedia/presentation/delegates/search_movie_delegate.dart';
+import 'package:go_router/go_router.dart';
+
+class CustomAppbar extends ConsumerWidget {
   const CustomAppbar({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, ref) {
     final colors = Theme.of(context).colorScheme;
     final titleStyle = Theme.of(context).textTheme.titleMedium;
 
     return SafeArea(
       bottom: false,
       child: Padding(
-        padding: EdgeInsets.symmetric(
+        padding: const EdgeInsets.symmetric(
           horizontal: 10 
         ),
         child: SizedBox(
@@ -28,9 +33,33 @@ class CustomAppbar extends StatelessWidget {
 
               IconButton(
                 onPressed: () {
-                  
+                  //onPressed se asegura que el estado más reciente de los proveedores (movieRepository y searchQuery) 
+                  //se obtenga justo antes de ejecutar la búsqueda, en lugar de cuando se construye el widget.
+                  final movieRepository = ref.read(movieRepositoryProvider);
+                  final searchQuery = ref.read(searchQueryProvider);
+
+                  showSearch<Movie?>(
+                    query: searchQuery,
+                    //*Contexto de toda la aplicacion
+                    context: context, 
+                    //*Encargado de trabajar la busqueda
+                    delegate: SearchMovieDelegate(
+                      //searchMovies: movieRepository.searchMovies
+                      searchMovies: (query) {
+                        //guarda la query en es state
+                        ref.read(searchQueryProvider.notifier).update((state) => query);
+                        //*Es como si la función anónima actuara como un intermediario: hace algo extra (actualizar el estado) y 
+                        //*luego retorna el resultado de la búsqueda para que el delegado lo use.
+                        return movieRepository.searchMovies(query);
+                      }
+                    )
+                    //* .then permite ejecutar lógica después de que el Future de showSearch se complete.
+                  ).then((value) {
+                    if(value == null) return;
+                    context.push('/movie/${value.id}');
+                  });
                 }, 
-                icon: Icon(Icons.search) 
+                icon: const Icon(Icons.search) 
               )
             ],
           ),
