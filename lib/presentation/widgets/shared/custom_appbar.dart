@@ -35,8 +35,10 @@ class CustomAppbar extends ConsumerWidget {
                 onPressed: () {
                   //onPressed se asegura que el estado más reciente de los proveedores (movieRepository y searchQuery) 
                   //se obtenga justo antes de ejecutar la búsqueda, en lugar de cuando se construye el widget.
-                  final movieRepository = ref.read(movieRepositoryProvider);
+                  //final movieRepository = ref.read(movieRepositoryProvider); -> 238
                   final searchQuery = ref.read(searchQueryProvider);
+
+                  final searchedMovies = ref.read(searchedMoviesProvider);
 
                   showSearch<Movie?>(
                     query: searchQuery,
@@ -45,13 +47,19 @@ class CustomAppbar extends ConsumerWidget {
                     //*Encargado de trabajar la busqueda
                     delegate: SearchMovieDelegate(
                       //searchMovies: movieRepository.searchMovies
-                      searchMovies: (query) {
+                      
+                      searchMovies: ref.read(searchedMoviesProvider.notifier).searchMoviesQuery,
+                      initialMovies: searchedMovies
+
+                      //searchMovies: (query) {
                         //guarda la query en es state
-                        ref.read(searchQueryProvider.notifier).update((state) => query);
+                        //ref.read(searchQueryProvider.notifier).update((state) => query); -> 238
                         //*Es como si la función anónima actuara como un intermediario: hace algo extra (actualizar el estado) y 
                         //*luego retorna el resultado de la búsqueda para que el delegado lo use.
-                        return movieRepository.searchMovies(query);
-                      }
+                        //return movieRepository.searchMovies(query);
+                      //}
+
+
                     )
                     //* .then permite ejecutar lógica después de que el Future de showSearch se complete.
                   ).then((value) {

@@ -12,12 +12,18 @@ typedef SearchMovieCallback = Future<List<Movie>> Function(String query);
 class SearchMovieDelegate extends SearchDelegate <Movie?>{
 
   final SearchMovieCallback searchMovies;
+  List<Movie> initialMovies;
   //broascast es para escuchar multiples listeners
   //StreamController es lo que te permite manejar y controlar el flujo de datos dentro de un Stream es como el "centro de control" del flujo de datos
   StreamController<List<Movie>> debouncedMovies = StreamController.broadcast();
+
+  StreamController<bool> isLoadingStream = StreamController.broadcast();
   Timer? _debounceTimer;
 
-  SearchMovieDelegate({required this.searchMovies});
+  SearchMovieDelegate({
+    required this.searchMovies,
+    required this.initialMovies
+    });
 
   //cada ves que cierro el streams creado sigue existiendo
   //cierro el stream creado
@@ -34,20 +40,52 @@ class SearchMovieDelegate extends SearchDelegate <Movie?>{
     if( _debounceTimer?.isActive ?? false) _debounceTimer!.cancel();
 
     _debounceTimer = Timer(const Duration(milliseconds: 500), () async {
+      
+      isLoadingStream.add(true);
       //*se ejecuta cuando pasa el tiempo
       //busca las peliculas y emite al stream
       //si el query es vacio devuelve lista vacia
-      if( query.isEmpty ){
+      //Al detectar el query vacio no llegaba al searchMovies que es el que actualiza el ultimo estado del query
+      /*if( query.isEmpty ){
         debouncedMovies.add([]);
         return;
-      }
+      }*/
       //si el query tiene informacion, busca y lo inserta en el stream para su construccion.
       final movies = await searchMovies(query);
+      initialMovies = movies;
       debouncedMovies.add(movies);
       //print('Buscando pelas');
+      isLoadingStream.add(false);
     },);
   }
   
+  Widget buildResultsAndSuggestions(){
+    
+    return StreamBuilder(
+      initialData: initialMovies,
+      stream: debouncedMovies.stream,
+      builder: (context, snapshot) {
+
+        final movies = snapshot.data ?? [];
+        return ListView.builder(
+          itemCount: movies.length,
+          itemBuilder: (context, index) {         
+            final movie = movies[index];
+            return _MovieItem(
+              movie: movie, 
+              onMovieSelected: (context, movie) {
+                clearStreams();
+                close(context, movie);
+              },
+            );
+          },
+        );
+      },
+    );
+
+  }
+
+
   @override
   String? get searchFieldLabel => 'Buscar pelicula';
 
@@ -56,16 +94,48 @@ class SearchMovieDelegate extends SearchDelegate <Movie?>{
 
     //print('Query: $query');
     return [
-      //if(query.isNotEmpty)
-      FadeIn(
-        //es como la validacion
-        animate: query.isNotEmpty,
-        child: IconButton(
-          //query es el valor de la busqueda
-          onPressed: () => query = '', 
-          icon: const Icon(Icons.clear)
-        ),
+      
+      StreamBuilder(
+        initialData: false,
+        stream: isLoadingStream.stream, 
+        builder: (context, snapshot) {
+
+          if(snapshot.data ?? false) {
+            return SpinPerfect(
+              duration: const Duration(seconds: 1),
+              spins: 20,
+              infinite: true,
+              child: IconButton(
+                //query es el valor de la busqueda
+                onPressed: () => query = '', 
+                icon: const Icon(Icons.refresh_rounded)
+              ),
+            );
+          }
+
+          return FadeIn(
+            animate: query.isNotEmpty,
+            child: IconButton(
+              onPressed: () => query = '', 
+              icon: const Icon(Icons.clear)
+            ),
+          );
+        },
       )
+
+      
+
+
+      //if(query.isNotEmpty)
+      // FadeIn(
+      //   //es como la validacion
+      //   animate: query.isNotEmpty,
+      //   child: IconButton(
+      //     //query es el valor de la busqueda
+      //     onPressed: () => query = '', 
+      //     icon: const Icon(Icons.clear)
+      //   ),
+      // )
     ];
   }
 
@@ -82,15 +152,22 @@ class SearchMovieDelegate extends SearchDelegate <Movie?>{
 
   @override
   Widget buildResults(BuildContext context) {
-    return const Text('buildResults');
+
+    return buildResultsAndSuggestions();
   }
 
   @override
   Widget buildSuggestions(BuildContext context) {
     //return FutureBuilder(
     _onQueryChanged(query);
+
+
+    //*return buildResultsAndSuggestions(); 
+
+
     //Escucha los valores emitidos por el stream
     return StreamBuilder(
+      initialData: initialMovies,
       //cada vez que se toque una tecla dispararia el future
       //future: searchMovies(query), 
       //*stream es la parte que los oyentes (como StreamBuilder) usan para suscribirse y recibir los datos que se están emitiendo
