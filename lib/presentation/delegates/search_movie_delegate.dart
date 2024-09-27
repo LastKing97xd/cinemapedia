@@ -29,6 +29,7 @@ class SearchMovieDelegate extends SearchDelegate <Movie?>{
   //cierro el stream creado
   void clearStreams(){
     debouncedMovies.close();
+    isLoadingStream.close();
   }
 
   void _onQueryChanged(String query) {
