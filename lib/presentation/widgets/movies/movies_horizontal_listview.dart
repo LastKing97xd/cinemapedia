@@ -48,7 +48,7 @@ class _MoviesHorizontalListviewState extends State<MoviesHorizontalListview> {
   Widget build(BuildContext context) {
     //Se utiliza para que no se desborde lo interno
     return SizedBox(
-      height: 350,
+      height: 360,
       child: Column(
         children: [
           //* para referencia al title de parametro se usa el widget
